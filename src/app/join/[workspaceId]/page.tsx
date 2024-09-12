@@ -11,12 +11,21 @@ import { useRouter } from "next/navigation";
 import VerificationInput from "react-verification-input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useMemo, useEffect } from "react";
 
 const JoinPage = () => {
   const router = useRouter();
   const workspaceId = useWorkspaceId();
   const { data, isLoading } = useGetWorkspaceInfo({ id: workspaceId });
   const { mutate, isPending } = useJoin();
+
+  const isMember = useMemo(() => data?.isMember, [data?.isMember]);
+
+  useEffect(() => {
+    if (isMember) {
+      router.push(`/workspace/${workspaceId}`);
+    }
+  }, [isMember, router, workspaceId]);
 
   const handleComplete = (value: string) => {
     mutate(
