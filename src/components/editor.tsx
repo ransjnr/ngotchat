@@ -1,5 +1,6 @@
 import Quill, { QuillOptions } from "quill";
 import "quill/dist/quill.snow.css";
+import { Input } from "./ui/input";
 import {
   MutableRefObject,
   useEffect,
@@ -152,7 +153,7 @@ const Editor = ({
 
   return (
     <div className="flex flex-col">
-      <input
+      <Input
         type="file"
         accept="image/*"
         ref={imageElementRef}
@@ -170,7 +171,7 @@ const Editor = ({
           <div className="p-2">
             <div className="relative size-[62px] flex items-center justify-center group/image">
               <Hint label="Remove image">
-                <button
+                <Button
                   onClick={() => {
                     setImage(null);
                     imageElementRef.current!.value = "";
@@ -178,7 +179,7 @@ const Editor = ({
                   className="hidden group-hover/image:flex rounded-full bg-black/70 hover:bg-black absolute -top-2.5 -right-2.5 text-white size-6 z-[4] border-2 border-white items-center justify-center"
                 >
                   <XIcon className="size-3.5" />
-                </button>
+                </Button>
               </Hint>
               <Image
                 src={URL.createObjectURL(image)}
