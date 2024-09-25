@@ -1,11 +1,48 @@
 import { Id } from "./_generated/dataModel";
-import { query, QueryCtx } from "./_generated/server";
+import { mutation, query, QueryCtx } from "./_generated/server";
 import { auth } from "./auth";
 import { v } from "convex/values";
 
 const populateUser = (ctx: QueryCtx, id: Id<"users">) => {
   return ctx.db.get(id);
 };
+
+export const getById = query({
+  args: { id: v.id("members") },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+
+    if (!userId) {
+      return null;
+    }
+
+    const member = await ctx.db.get(args.id);
+
+    if (!member) {
+      return null;
+    }
+    const currentMember = await ctx.db
+      .query("members")
+      .withIndex("by_workspace_id_user_id", (q) =>
+        q.eq("workspaceId", member.workspaceId).eq("userId", userId)
+      );
+
+    if (!currentMember) {
+      return null;
+    }
+
+    const user = await populateUser(ctx, member.userId);
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      ...member,
+      user,
+    };
+  },
+});
 
 export const get = query({
   args: { workspaceId: v.id("workspaces") },
@@ -72,5 +109,82 @@ export const current = query({
     }
 
     return member;
+  },
+});
+
+export const update = mutation({
+  args: {
+    id: v.id("members"),
+    role: v.union(v.literal("admin"), v.literal("member")),
+  },
+
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const member = await ctx.db.get(args.id);
+    if (!member) {
+      throw new Error("Member not found");
+    }
+
+    const currentMember = await ctx.db
+      .query("members")
+      .withIndex("by_workspace_id_user_id", (q) =>
+        q.eq("workspaceId", member.workspaceId).eq("userId", userId)
+      )
+      .unique();
+
+    if (!currentMember || currentMember.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.patch(args.id, {
+      role: args.role,
+    });
+
+    return args.id;
+  },
+});
+
+export const remove = mutation({
+  args: {
+    id: v.id("members"),
+  },
+
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const member = await ctx.db.get(args.id);
+    if (!member) {
+      throw new Error("Member not found");
+    }
+
+    const currentMember = await ctx.db
+      .query("members")
+      .withIndex("by_workspace_id_user_id", (q) =>
+        q.eq("workspaceId", member.workspaceId).eq("userId", userId)
+      )
+      .unique();
+
+    if (!currentMember || currentMember.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    if (member.role === "admin") {
+      throw new Error("Admin cannot be removed");
+    }
+
+    const isSelf = currentMember._id === args.id;
+    const isSelfAdmin = currentMember.role === "admin";
+    //TODO: Remove member
+
+    return args.id;
   },
 });
