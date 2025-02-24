@@ -7,7 +7,7 @@ import { Bell, Home, MessagesSquare, MoreHorizontal } from "lucide-react";
 export const Sidebar = () => {
   const pathname = usePathname();
   return (
-    <aside className="w-[70px] h-full bg-[#481349] flex flex-col gap-y-4 items-center pt-[9px] pb-4">
+    <aside className="w-[70px] h-full bg-[#173e20] flex flex-col gap-y-4 items-center pt-[9px] pb-4">
       <WorkspaceSwitcher />
       <SidebarButton
         icon={Home}

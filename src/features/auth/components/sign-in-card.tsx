@@ -25,7 +25,7 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
-  
+
   const onPasswordSignIn = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPending(true);
@@ -37,7 +37,7 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
         setPending(false);
       });
   };
-  
+
   const onProviderSignIn = (value: "github" | "google") => {
     setPending(true);
     signIn(value).finally(() => {
