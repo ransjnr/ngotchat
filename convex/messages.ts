@@ -321,6 +321,7 @@ export const create = mutation({
     channelId: v.optional(v.id("channels")),
     conversationId: v.optional(v.id("conversations")),
     parentMessageId: v.optional(v.id("messages")),
+    tag: v.optional(v.literal("product")),
   },
   handler: async (ctx, args) => {
     const userId = await auth.getUserId(ctx);
@@ -346,6 +347,8 @@ export const create = mutation({
 
       _conversationId = parentMessage.conversationId;
     }
+    // Add console.log before insert
+    console.log("Creating message with tag:", args.tag);
 
     const messageId = await ctx.db.insert("messages", {
       memberId: member._id,
@@ -355,6 +358,7 @@ export const create = mutation({
       conversationId: _conversationId,
       workspaceId: args.workspaceId,
       parentMessageId: args.parentMessageId,
+      tag: args.tag,
     });
 
     return messageId;

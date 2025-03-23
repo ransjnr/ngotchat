@@ -11,6 +11,7 @@ type RequestType = {
   channelId?: Id<"channels">;
   parentMessageId?: Id<"messages">;
   conversationId?: Id<"conversations">;
+  tag?: "product";
 };
 type ResponseType = Id<"messages"> | null;
 
@@ -35,16 +36,19 @@ export const useCreateMessage = () => {
 
   const mutation = useMutation(api.messages.create);
   const mutate = useCallback(
-    async (values: any, options?: Options) => {
+    async (values: RequestType, options?: Options) => {
       try {
         setData(null);
         setError(null);
         setStatus("pending");
 
         const response = await mutation(values);
+        setData(response);
+        setStatus("success");
         options?.onSuccess?.(response);
         return response;
       } catch (error) {
+        setError(error as Error);
         setStatus("error");
         options?.onError?.(error as Error);
         if (options?.throwError) {
